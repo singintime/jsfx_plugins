@@ -1,0 +1,60 @@
+// Copyright 2020 Stefano Baldan
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+//=======================================================
+desc:Singintime's ImpoStereo
+//=======================================================
+
+slider1:0<-100,100,0.01>Width (%)
+slider2:1000<20,20000,1>Corner frequency (Hz)
+
+//=======================================================
+@init
+//=======================================================
+
+function clip(x, lo, hi) (
+  max(lo, min(hi, x));
+);
+
+x = 0;
+l = 0.05 * srate;
+r = 0.1 * srate;
+
+n = 0;
+
+//=======================================================
+@slider
+//=======================================================
+
+fgain = clip(slider1, -100, 100) / 200;
+delay = floor(srate / clip(slider2, 20, 20000) + 0.5);
+
+//=======================================================
+@sample
+//=======================================================
+
+x0 = spl0;
+
+l0 = x[n] + fgain * (x0 - l[n]);
+r0 = x[n] - fgain * (x0 - r[n]);
+
+x[n] = x0;
+l[n] = l0;
+r[n] = r0;
+
+n = (n + 1) % delay;
+
+spl0 = l0;
+spl1 = r0;
