@@ -1,6 +1,6 @@
 function clip(value, start, end) (
   max(start, min(end, value));
-)
+);
 
 function knob_new(x, y, radius, value, start, end, base) (
   this.x = x;
@@ -27,7 +27,6 @@ function knob_new(x, y, radius, value, start, end, base) (
   this.angle = 1.5 * $pi * (this.norm - 0.5);
 
   this.active = 0;
-  this.mouse_x = 0;
   this.mouse_y = 0;
 );
 
@@ -70,15 +69,30 @@ function knob_update() local(dx, dy, dd, rr) (
       rr = this.radius * this.radius;
       dd < rr ? (
         this.active = 1;
-        this.mouse_x = mouse_x;
         this.mouse_y = mouse_y;
       );
     );
-    this.knob_setNorm(this.norm + 0.01 * dy);
   ) : this.active = 0;
+
+  this.active == 1 ? (
+    dy = mouse_y - this.mouse_y;
+    this.knob_setNorm(this.norm - 0.01 * dy);
+    this.mouse_y = mouse_y;
+  );
 );
 
-function knob_draw() (
+function knob_draw()  (
   this.knob_update();
-  // drawing routine here
+  
+  gfx_set(0.9);
+  gfx_circle(this.x, this.y, this.radius, 1);
+  
+  gfx_set(0.1);
+  gfx_line(this.x, this.y, this.x + this.outer * sin(this.angle), this.y - this.outer * cos(this.angle));
+  
+  this.value < 0 ? gfx_set(0.1, 0.1, 0.9) : gfx_set(0.9, 0.1, 0.1);
+  gfx_arc(this.x, this.y, this.radius, 0, this.angle);
+    
+  gfx_set(0.5);
+  gfx_circle(this.x, this.y, this.inner, 1);
 );
