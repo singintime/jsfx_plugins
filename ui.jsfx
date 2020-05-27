@@ -1,0 +1,84 @@
+function clip(value, start, end) (
+  max(start, min(end, value));
+)
+
+function knob_new(x, y, radius, value, start, end, base) (
+  this.x = x;
+  this.y = y;
+  this.radius = radius;
+
+  this.outer = radius - 1;
+  this.inner = radius / 2;
+
+  this.value = value;
+  this.start = start;
+  this.end = end;
+
+  this.base = base;
+
+  this.base == 1 ? (
+    this.range = this.end - this.start;
+    this.norm = (this.value - this.start) / this.range;
+  ) : (
+    this.range = (log(this.end) - log(this.start)) / log(this.base);
+    this.norm = (log(this.value) - log(this.start)) / (log(this.base) * this.range);
+  );
+
+  this.angle = 1.5 * $pi * (this.norm - 0.5);
+
+  this.active = 0;
+  this.mouse_x = 0;
+  this.mouse_y = 0;
+);
+
+function knob_setValue(value) (
+  this.value = clip(value, this.start, this.end);
+  this.base == 1 ? (
+    this.norm = (this.value - this.start) / this.range;
+  ) : (
+    this.norm = (log(this.value) - log(this.start)) / (log(this.base) * this.range);
+  );
+  this.angle = 1.5 * $pi * (this.norm - 0.5);
+);
+
+function knob_setNorm(norm) (
+  this.norm = clip(norm, 0, 1);
+  this.angle = 1.5 * $pi * (this.norm - 0.5);
+  this.base == 1 ? (
+    this.value = this.start + this.norm * this.range;
+  ) : (
+    this.value = this.start * this.base ^ (this.norm * this.range);
+  );
+);
+
+function knob_setAngle(norm) (
+  this.angle = clip(angle, -0.75 * $pi, 0.75 * pi);
+  this.norm = this.angle / (1.5 * $pi) + 0.5;
+  this.base == 1 ? (
+    this.value = this.start + this.norm * this.range;
+  ) : (
+    this.value = this.start * this.base ^ (this.norm * this.range);
+  );
+);
+
+function knob_update() local(dx, dy, dd, rr) (
+  mouse_cap & 1 == 1 ? (
+    this.active == 0 ? (
+      dx = mouse_x - this.x;
+      dy = mouse_y - this.y;
+      dd = dx * dx + dy * dy;
+      rr = this.radius * this.radius;
+      dd < rr ? (
+        this.active = 1;
+        this.mouse_x = mouse_x;
+        this.mouse_y = mouse_y;
+      );
+    );
+    this.knob_setNorm(this.norm + 0.01 * dy);
+  ) : this.active = 0;
+);
+
+function knob_draw() (
+  this.knob_update();
+  // drawing routine here
+);
